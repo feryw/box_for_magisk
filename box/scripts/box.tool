@@ -177,7 +177,8 @@ upcurl() {
   mkdir -p "${bin_dir}/backup"
   [ -f "${bin_dir}/curl" ] && cp "${bin_dir}/curl" "${bin_dir}/backup/curl.bak" >/dev/null 2>&1
 
-  local latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | busybox grep -oE "[0-9.]*" | head -1)
+  #local latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/stunnel/static-curl/releases" | grep "tag_name" | busybox grep -oE "[0-9.]*" | head -1)
+  local latest_version=$(curl -s https://github.com/stunnel/static-curl/releases | grep -oP '/stunnel/static-curl/releases/tag/\K[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
 
   local download_link="https://github.com/stunnel/static-curl/releases/download/${latest_version}/curl-linux-${arch}-${latest_version}.tar.xz"
 
@@ -376,7 +377,8 @@ upkernel() {
         download_link="https://github.com/MetaCubeX/mihomo/releases"
 
         if [ "${mihomo_stable}" = "enable" ]; then
-          latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/MetaCubeX/mihomo/releases" | grep "tag_name" | busybox grep -oE "v[0-9.]*" | head -1)
+          #latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/MetaCubeX/mihomo/releases" | grep "tag_name" | busybox grep -oE "v[0-9.]*" | head -1)
+          latest_version=$(curl -s https://github.com/MetaCubeX/mihomo/releases | grep -oP '/MetaCubeX/mihomo/releases/tag/\Kv[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
           tag="$latest_version"
         else
           if [ "$use_ghproxy" == true ]; then
@@ -399,9 +401,9 @@ upkernel() {
       ;;
     "xray"|"v2fly")
       [ "${bin_name}" = "xray" ] && bin='Xray' || bin='v2ray'
-      api_url="https://api.github.com/repos/$(if [ "${bin_name}" = "xray" ]; then echo "XTLS/Xray-core/releases"; else echo "v2fly/v2ray-core/releases"; fi)"
+      #api_url="https://api.github.com/repos/$(if [ "${bin_name}" = "xray" ]; then echo "XTLS/Xray-core/releases"; else echo "v2fly/v2ray-core/releases"; fi)"
       # set download link and get the latest version
-      latest_version=$(busybox wget --no-check-certificate -qO- ${api_url} | grep "tag_name" | busybox grep -oE "v[0-9.]*" | head -1)
+      #latest_version=$(busybox wget --no-check-certificate -qO- ${api_url} | grep "tag_name" | busybox grep -oE "v[0-9.]*" | head -1)
 
       case $(uname -m) in
         "i386") download_file="$bin-linux-32.zip" ;;
@@ -410,6 +412,7 @@ upkernel() {
         "aarch64") download_file="$bin-android-arm64-v8a.zip" ;;
         *) log Error "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
       esac
+      latest_version=$(curl -s https://github.com/v2fly/v2ray-core/releases | grep -oP '/v2fly/v2ray-core/releases/tag/\Kv[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
       # Do anything else below
       download_link="https://github.com/$(if [ "${bin_name}" = "xray" ]; then echo "XTLS/Xray-core/releases"; else echo "v2fly/v2ray-core/releases"; fi)"
       log Debug "Downloading ${download_link}/download/${latest_version}/${download_file}"
