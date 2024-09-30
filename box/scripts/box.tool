@@ -354,11 +354,13 @@ upkernel() {
       if [ "${singbox_stable}" = "disable" ]; then
         # Pre-release
         log Debug "download ${bin_name} Pre-release"
-        latest_version=$(busybox wget --no-check-certificate -qO- "${api_url}" | grep "tag_name" | busybox grep -oE "v[0-9].*" | head -1 | cut -d'"' -f1)
+        #latest_version=$(busybox wget --no-check-certificate -qO- "${api_url}" | grep "tag_name" | busybox grep -oE "v[0-9].*" | head -1 | cut -d'"' -f1)
+        latest_version=$(curl -s https://github.com/SagerNet/sing-box/releases | grep -oP '/SagerNet/sing-box/releases/tag/\Kv[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?' | head -n 1)
       else
         # Latest
         log Debug "download ${bin_name} Latest-stable"
-        latest_version=$(busybox wget --no-check-certificate -qO- "${api_url}/latest" | grep "tag_name" | busybox grep -oE "v[0-9.]*" | head -1)
+        #latest_version=$(busybox wget --no-check-certificate -qO- "${api_url}/latest" | grep "tag_name" | busybox grep -oE "v[0-9.]*" | head -1)
+        latest_version=$(curl -s https://github.com/SagerNet/sing-box/releases | grep -oP '/SagerNet/sing-box/releases/tag/\Kv[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)
       fi
 
       if [ -z "$latest_version" ]; then
@@ -385,7 +387,8 @@ upkernel() {
             download_link="${url_ghproxy}/${download_link}"
           fi
           tag="Prerelease-Alpha"
-          latest_version=$(busybox wget --no-check-certificate -qO- "${download_link}/expanded_assets/${tag}" | busybox grep -oE "alpha-[0-9a-z]+" | head -1)
+          #latest_version=$(busybox wget --no-check-certificate -qO- "${download_link}/expanded_assets/${tag}" | busybox grep -oE "alpha-[0-9a-z]+" | head -1)
+          latest_version=$(curl -s L "${download_link}/expanded_assets/${tag}" | busybox grep -oE "alpha-[0-9a-z]+" | head -1)
         fi
         # set the filename based on platform and architecture
         filename="mihomo-${platform}-${arch}-${latest_version}"
@@ -440,7 +443,8 @@ upkernel() {
       fi
 
       # Fetch the latest version of Hysteria from GitHub releases
-      local latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/apernet/hysteria/releases" | grep "tag_name" | grep -oE "[0-9.].*" | head -1 | sed 's/,//g' | cut -d '"' -f 1)
+      #local latest_version=$(busybox wget --no-check-certificate -qO- "https://api.github.com/repos/apernet/hysteria/releases" | grep "tag_name" | grep -oE "[0-9.].*" | head -1 | sed 's/,//g' | cut -d '"' -f 1)
+      local_latest_version=$(curl -s -L "https://github.com/apernet/hysteria/releases" | grep -oE "app/v([0-9]+\.[0-9]+\.[0-9]+)" | sed 's/app\/v//' | head -n 1)
 
       local download_link="https://github.com/apernet/hysteria/releases/download/app%2Fv${latest_version}/hysteria-android-${arch}"
 
